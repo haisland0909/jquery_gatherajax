@@ -43,7 +43,7 @@
     } ,
     trigger_dom_type   : "class" , // String : for trigger common dom type ["id" , "class" , other] 
     trigger_event_base : "click" , // String : for trigger common dom's hook event you can select from $(dom).on event
-    pre_tri_base       : null    , // function(dom , method) : for function execute before ajax , dom is trigger dom , method is ajax_method_name eg.add,edit,del
+    pre_tri_base       : null    , // function(dom , method) : for function execute before ajax , dom is trigger dom , method is ajax_method_name eg.add,edit,del if return false then ajax is not executed and return some value (maybe true) ajax is executed
     after_tri_base     : null    , // function(dom , method) : for function execute after ajax , dom is trigger dom
   }
 
@@ -92,7 +92,12 @@
             if(type_obj.pre_tri){
               type_obj.pre_tri($(this) , key);
             }
-            $.gatherajax[name][key]["execute"](type_obj.data);
+            if(type_obj.pre_tri){
+              var result = type_obj.pre_tri($(this) , key);
+            }
+            if(!type_obj.pre_tri || result){
+              $.gatherajax[name][key]["execute"](type_obj.data);
+            }
             if(type_obj.after_tri){
               type_obj.after_tri($(this) , key);
             }
@@ -110,7 +115,7 @@
   $.gatherajax.construct = function(options){
     var settings = $.extend({} , $.gatherajax.defaults, options );
     if(!settings.name){
-      console.log("no name");
+      console.error("no name");
       return false;
     }
     $.gatherajax[settings.name] = {};
@@ -149,5 +154,11 @@
     });
   };
 
+	$.gatherajax.set = function(name , key , param){
+    if(!$.autoajax[name]){
+      console.error("no name");
+    }
+    $.gatherajax[name][key] = param;
+  }
 
 })(jQuery);
