@@ -1,7 +1,7 @@
 ;(function($) {
-  $.autoajax = {};
+  $.gatherajax = {};
 
-  $.autoajax.defaults = {
+  $.gatherajax.defaults = {
     name          : null                          , // String : for method_name
     url_base      : ""                          , // String : for all_ajax url base
     add_type      : {
@@ -15,7 +15,7 @@
     error_base        : null                        , // function() : for all_ajax error callback method without set by inside add_type
   };
 
-  $.autoajax.defaults_type = {
+  $.gatherajax.defaults_type = {
     url     : ""   ,
     type    : ""   ,
     data    : null ,
@@ -24,7 +24,7 @@
     error   : null ,
   };
 
-  $.autoajax.defaults_trigger = {
+  $.gatherajax.defaults_trigger = {
     name         : null ,
     trigger_type : {
       /*add  : {
@@ -34,7 +34,7 @@
         after_tri : function(dom , method) , function : for function execute after ajax , dom is trigger dom
         data      : {
           id   : 1 ,
-          name : function(){return $.autoajax.this.val()} // $.autoajax.this is triggered dom
+          name : function(){return $.gatherajax.this.val()} // $.gatherajax.this is triggered dom
         }
       } ,
       edit : {} ,
@@ -47,13 +47,13 @@
     after_tri_base     : null    , // function(dom , method) : for function execute after ajax , dom is trigger dom
   }
 
-  $.autoajax.add_trigger = function(options){
-    var tri_settings = $.extend({} , $.autoajax.defaults_trigger, options );
+  $.gatherajax.add_trigger = function(options){
+    var tri_settings = $.extend({} , $.gatherajax.defaults_trigger, options );
     if(tri_settings["name"]){
       var name = tri_settings["name"];
       $.each(tri_settings.trigger_type , function(key , type_obj){
         var trigger_dom , trigger_event;
-        if($.autoajax[name][key]){
+        if($.gatherajax[name][key]){
           if(!type_obj.selector){
             switch(tri_settings.trigger_dom_type){
               case "class":
@@ -88,11 +88,11 @@
 
           $(document).on(trigger_event , trigger_dom , function(e){
             e.preventDefault();
-            $.autoajax.this = $(this);
+            $.gatherajax.this = $(this);
             if(type_obj.pre_tri){
               type_obj.pre_tri($(this) , key);
             }
-            $.autoajax[name][key]["execute"](type_obj.data);
+            $.gatherajax[name][key]["execute"](type_obj.data);
             if(type_obj.after_tri){
               type_obj.after_tri($(this) , key);
             }
@@ -107,17 +107,17 @@
     }
   }
 
-  $.autoajax.construct = function(options){
-    var settings = $.extend({} , $.autoajax.defaults, options );
+  $.gatherajax.construct = function(options){
+    var settings = $.extend({} , $.gatherajax.defaults, options );
     if(!settings.name){
       console.log("no name");
       return false;
     }
-    $.autoajax[settings.name] = {};
+    $.gatherajax[settings.name] = {};
     $.each(settings.add_type , function(key , type_obj){
 
 
-      settings.add_type[key] = $.extend({} ,  $.autoajax.defaults_type, type_obj );
+      settings.add_type[key] = $.extend({} ,  $.gatherajax.defaults_type, type_obj );
       var tmp_obj = settings.add_type[key];
 
       if(settings.success_base && !tmp_obj.success){
@@ -140,25 +140,14 @@
         tmp_obj.url = settings.url_base + "/" + key;
       }
 
-      $.autoajax[settings.name][key] = tmp_obj;
+      $.gatherajax[settings.name][key] = tmp_obj;
 
-      $.autoajax[settings.name][key]["execute"] = function(data){
-        var ajax_option = $.extend({} , $.autoajax[settings.name][key] , {data : data});
+      $.gatherajax[settings.name][key]["execute"] = function(data){
+        var ajax_option = $.extend({} , $.gatherajax[settings.name][key] , {data : data});
         $.ajax(ajax_option);
       }
     });
   };
-/*
-  $.autoajax.execute = function(name , method , data){
-    var ajax_option = $.autoajax[name][method];
-    if(!ajax_option){
-      console.log("no method");
-      return false;
-    }
-    ajax_option.data = data;
-    $.ajax(ajax_option);
-  }
-*/
 
 
 })(jQuery);
