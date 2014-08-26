@@ -4,7 +4,7 @@ jquery_gatherajax
 this plugin gathering $.ajax method by each data eg.) add edit del
 
 # construct gatherajax
-{code}
+'''
   var options = {
     name          : "opt"                              ,
     url_base      : "/option"                          , // String : for all_ajax url base
@@ -32,10 +32,10 @@ this plugin gathering $.ajax method by each data eg.) add edit del
   }
 
   $.gatherajax.construct(options);
-{/code}
+'''
 
 # Usage
-{code}
+'''
   $.gatherajax.opt.get.execute(); //this method send ajax request to /option/get and with no data
   $.gatherajax.opt.add.execute({id : 1}); // this method send ajax request to /add_option and with id = 1 data by POST
-{/code}
+'''
