@@ -20,8 +20,6 @@
     type    : ""   ,
     data    : null ,
     dataType: null ,
-    success : null ,
-    error   : null ,
   };
 
   $.gatherajax.defaults_trigger = {
@@ -34,7 +32,9 @@
         data      : {
           id   : 1 ,
           name : function(){return $.gatherajax.this.val()} // $.gatherajax.this is triggered dom
-        }
+        },
+        success_func : function(res) ,
+        error_func   : function(res) ,
       } ,
       edit : {} ,
       del  : {} ,
@@ -88,7 +88,20 @@
               var result = type_obj.pre_tri($(this) , key);
             }
             if(!type_obj.pre_tri || result){
-              $.gatherajax[name][key]["execute"](type_obj.data);
+              if(type_obj.success_func){
+                if(type_obj.error_func){
+                  $.gatherajax[name][key]["execute"](type_obj.data , type_obj.success_func , type_obj.error_func);
+                }else{
+                  $.gatherajax[name][key]["execute"](type_obj.data , type_obj.success_func , null);
+                }
+              }else{
+                if(type_obj.error_func){
+                  $.gatherajax[name][key]["execute"](type_obj.data , null , type_obj.error_func);
+                }else{
+                  $.gatherajax[name][key]["execute"](type_obj.data , null , null);
+                }
+              }
+              
             }
           })
 
@@ -101,7 +114,7 @@
     }
   }
 
-  $.gatherajax.construct = function(options){
+  $.gatherajax.__construct = function(options){
     var settings = $.extend({} , $.gatherajax.defaults, options );
     if(!settings.name){
       console.error("no name");
@@ -113,16 +126,6 @@
 
       settings.add_type[key] = $.extend({} ,  $.gatherajax.defaults_type, type_obj );
       var tmp_obj    = settings.add_type[key];
-
-      tmp_obj.method = key;
-
-      if(settings.success_base && !tmp_obj.success){
-        tmp_obj.success = settings.success_base;
-      }
-
-      if(settings.error_base && !tmp_obj.error){
-        tmp_obj.error = settings.error_base;
-      }
 
       if(settings.type_base && !tmp_obj.type){
         tmp_obj.type = settings.type_base;
@@ -138,12 +141,31 @@
 
       $.gatherajax[settings.name][key] = tmp_obj;
 
-      $.gatherajax[settings.name][key]["execute"] = function(data){
+      $.gatherajax[settings.name][key]["ajax_func"] = function(data){
         var ajax_option = $.extend({} , $.gatherajax[settings.name][key] , {data : data});
-        $.ajax(ajax_option);
+        return $.ajax(ajax_option);
+      }
+
+      $.gatherajax[settings.name][key]["execute"] = function(data , done , fail){
+        var ajax_func   = $.gatherajax[settings.name][key]["ajax_func"](data);
+        if(done){
+          if(fail){
+            ajax_func.done(done).fail(fail);
+          }else{
+            ajax_func.done(done).fail(settings.error_base);
+          }
+        }else{
+          if(fail){
+            ajax_func.done(settings.success_base).fail(fail);
+          }else{
+            ajax_func.done(settings.success_base).fail(settings.error_base);
+          }
+        }
       }
     });
   };
+
+  $.gatherajax.construct = $.gatherajax.__construct;
 
   $.gatherajax.set = function(name , key , param){
     if(!$.gatherajax[name]){
