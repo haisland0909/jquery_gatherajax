@@ -31,7 +31,6 @@
         seletor   : ".add" , String : for trigger dom select if null or no object selector is ".{name}_add" when trigger_dom_type is "class"
         event     : "click" , String : for trigger dom's hook event you can select from $(dom).on event
         pre_tri   : function(dom , method) , function : for function execute before ajax , dom is trigger dom
-        after_tri : function(dom , method) , function : for function execute after ajax , dom is trigger dom
         data      : {
           id   : 1 ,
           name : function(){return $.gatherajax.this.val()} // $.gatherajax.this is triggered dom
@@ -43,8 +42,7 @@
     } ,
     trigger_dom_type   : "class" , // String : for trigger common dom type ["id" , "class" , other] 
     trigger_event_base : "click" , // String : for trigger common dom's hook event you can select from $(dom).on event
-    pre_tri_base       : null    , // function(dom , method) : for function execute before ajax , dom is trigger dom , method is ajax_method_name eg.add,edit,del if return false then ajax is not executed and return some value (maybe true) ajax is executed
-    after_tri_base     : null    , // function(dom , method) : for function execute after ajax , dom is trigger dom
+    pre_tri_base       : null    , // function(dom , method) : for function execute before ajax , dom is trigger dom , method is ajax_method_name eg.add,edit,del
   }
 
   $.gatherajax.add_trigger = function(options){
@@ -82,24 +80,15 @@
             type_obj.pre_tri = tri_settings.pre_tri_base;
           }
 
-          if(!type_obj.after_tri && tri_settings.after_tri_base){
-            type_obj.after_tri = tri_settings.after_tri_base;
-          }
 
           $(document).on(trigger_event , trigger_dom , function(e){
             e.preventDefault();
             $.gatherajax.this = $(this);
             if(type_obj.pre_tri){
-              type_obj.pre_tri($(this) , key);
-            }
-            if(type_obj.pre_tri){
               var result = type_obj.pre_tri($(this) , key);
             }
             if(!type_obj.pre_tri || result){
               $.gatherajax[name][key]["execute"](type_obj.data);
-            }
-            if(type_obj.after_tri){
-              type_obj.after_tri($(this) , key);
             }
           })
 
@@ -123,7 +112,9 @@
 
 
       settings.add_type[key] = $.extend({} ,  $.gatherajax.defaults_type, type_obj );
-      var tmp_obj = settings.add_type[key];
+      var tmp_obj    = settings.add_type[key];
+
+      tmp_obj.method = key;
 
       if(settings.success_base && !tmp_obj.success){
         tmp_obj.success = settings.success_base;
@@ -154,8 +145,8 @@
     });
   };
 
-	$.gatherajax.set = function(name , key , param){
-    if(!$.autoajax[name]){
+  $.gatherajax.set = function(name , key , param){
+    if(!$.gatherajax[name]){
       console.error("no name");
     }
     $.gatherajax[name][key] = param;
