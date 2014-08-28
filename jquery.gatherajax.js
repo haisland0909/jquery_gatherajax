@@ -45,6 +45,11 @@
     pre_tri_base       : null    , // function(dom , method) : for function execute before ajax , dom is trigger dom , method is ajax_method_name eg.add,edit,del
   }
 
+  $.gatherajax.defaults_after = {
+    done     : false   ,
+    fail     : false   ,
+  };
+
   $.gatherajax.add_trigger = function(options){
     var tri_settings = $.extend({} , $.gatherajax.defaults_trigger, options );
     if(tri_settings["name"]){
@@ -141,9 +146,23 @@
 
       $.gatherajax[settings.name][key] = tmp_obj;
 
-      $.gatherajax[settings.name][key]["ajax_func"] = function(data){
-        var ajax_option = $.extend({} , $.gatherajax[settings.name][key] , {data : data});
-        return $.ajax(ajax_option);
+      $.gatherajax[settings.name][key]["ajax_func"] = function(data , after_option){
+        var after        = $.extend({} , $.gatherajax.defaults_after , after_option);
+        var ajax_option  = $.extend({} , $.gatherajax[settings.name][key] , {data : data});
+        if(after.done){
+          if(after.fail){
+            return $.ajax(ajax_option).done(settings.success_base).fail(settings.error_base);
+          }else{
+            return $.ajax(ajax_option).done(settings.success_base);
+          }
+        }else{
+          if(after.fail){
+            return $.ajax(ajax_option).fail(settings.error_base);
+          }else{
+            return $.ajax(ajax_option);
+          }
+        }
+        
       }
 
       $.gatherajax[settings.name][key]["execute"] = function(data , done , fail){
